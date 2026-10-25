@@ -3,13 +3,15 @@ export const appMarkup = `
     <header class="mast">
       <div class="brand">
         <h1>Scripture Memory Tool</h1>
-        <p class="lede">Read a passage, hide words, and type them back.</p>
+        <p class="lede">Read a passage, search for its words, or type it from memory.</p>
       </div>
       <div class="mast-actions">
         <nav class="tabs" role="tablist" aria-label="Screens">
           <button type="button" class="tab" id="tab-study" data-view="study" role="tab" aria-selected="true">Study</button>
           <button type="button" class="tab" id="tab-edit" data-view="edit" role="tab" aria-selected="false">Edit</button>
           <button type="button" class="tab" id="tab-fill" data-view="fill" role="tab" aria-selected="false">Fill in</button>
+          <button type="button" class="tab" id="tab-search" data-view="search" role="tab" aria-selected="false">Search</button>
+          <button type="button" class="tab" id="tab-type" data-view="type" role="tab" aria-selected="false">Type</button>
         </nav>
         <div class="file-actions" aria-label="File">
           <button type="button" class="ghost" id="btn-new">New</button>
@@ -95,12 +97,55 @@ export const appMarkup = `
           <p class="hint" id="fill-hint"></p>
         </div>
       </section>
+
+      <section id="view-search" role="tabpanel" aria-labelledby="tab-search" hidden>
+        <div class="panel drill">
+          <div class="drill-meta">
+            <p><span class="meta-label">Category</span> <strong id="search-topic"></strong></p>
+            <p><span class="meta-label">Reference</span> <strong id="search-ref"></strong></p>
+            <p><span class="meta-label">Time</span> <strong id="search-clock"></strong></p>
+          </div>
+          <p id="search-verse" class="drill-verse" aria-live="polite"></p>
+          <p class="hint" id="search-hint"></p>
+          <div id="search-board" class="search-board"></div>
+          <div class="toolbar">
+            <button type="button" id="btn-search-new">New puzzle</button>
+            <button type="button" id="btn-search-print">Print puzzle</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-type" role="tabpanel" aria-labelledby="tab-type" hidden>
+        <div class="panel drill">
+          <div class="drill-meta">
+            <p><span class="meta-label">Category</span> <strong id="type-topic"></strong></p>
+            <p><span class="meta-label">Reference</span> <strong id="type-ref"></strong></p>
+            <p><span class="meta-label">Time</span> <strong id="type-clock"></strong></p>
+          </div>
+          <p class="hint" id="type-prompt">The verse stays hidden. Type it, then check.</p>
+          <label class="field" for="type-entry">
+            <span>Type the verse</span>
+            <textarea id="type-entry" rows="6" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Type the verse from memory."></textarea>
+          </label>
+          <label class="field" for="type-name">
+            <span>Name</span>
+            <input id="type-name" type="text" maxlength="40" placeholder="Your name, for the score" autocomplete="nickname" />
+          </label>
+          <div class="toolbar">
+            <button type="button" id="btn-type-check">Check</button>
+            <button type="button" id="btn-type-random">Random verse</button>
+          </div>
+          <p id="type-result" class="type-result" aria-live="polite"></p>
+          <p class="field-label" id="type-best-label">Best times</p>
+          <ul id="type-best" class="best-list" aria-labelledby="type-best-label"></ul>
+        </div>
+      </section>
     </main>
 
     <section id="print-root" class="print-root" aria-hidden="true"></section>
 
     <footer class="colophon">
-      Verses stay in this browser. Save downloads an <code>.sms</code> file the desktop Scripture Memory Tool can open.
+      Verses stay in this browser. Save downloads an <code>.sms</code> file the desktop Scripture Memory Tool can open. Type-test times stay in this browser too, and are not written into that file.
     </footer>
   </div>
 `;

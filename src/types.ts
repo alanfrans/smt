@@ -10,4 +10,4 @@ export type Library = {
   records: VerseRecord[];
 };
 
-export type ViewName = "study" | "edit" | "fill";
+export type ViewName = "study" | "edit" | "fill" | "search" | "type";

@@ -40,7 +40,7 @@ The browser copy uses the same `.sms` text for Open and Save. Between sessions i
 | Edit category, reference, and verse as you type | Yes. |
 | Previous / next record | Yes. Same messages at the ends: “This is the first record.” / “This is the last record.” |
 | Save `.sms` | Yes. **Save** downloads `scripture.sms`. |
-| Open `.sms` | Yes. Other extensions get “This file is not a Scripture Memory Tool file.” |
+| Open `.sms` | Yes. A VB6 `.smt` file opens too. Anything else gets “This file is not a Scripture Memory Tool file.” |
 | Fill in: hide N words with underscores | Yes. Slider plus a number, same idea as the trackbar and `txtFillNum`. |
 | Type the missing word | Yes. The matching word is written back into the verse. |
 | Print | Yes, via the browser print dialog. The desktop Print button had no code. |
@@ -51,7 +51,7 @@ The browser copy uses the same `.sms` text for Open and Save. Between sessions i
 | Borderless window, red transparency, scroll images, drag to move | Not ported. That is window chrome from `frmSMT.resx`. |
 | Papyrus labels, Courier New drill text | Partially. The drill uses Courier New while words are hidden. Papyrus is not used. |
 | Hover menus | Replaced by visible Study / Edit / Fill in and Open / Save / Print so a phone can reach them. |
-| Scoring, accounts, spaced repetition, packed Bible text | Not in the desktop app, and not added here. |
+| Scoring, accounts, spaced repetition, packed Bible text | Not in the VB.NET app. Scoring arrived later from the VB6 type test; see below. |
 
 ## Fill-in behavior
 
@@ -67,7 +67,7 @@ This port:
 - treats a trailing comma, period, or similar mark as optional
 - writes the original word back and moves to the next blank
 
-Enter on a wrong word says it does not match. There is still no score.
+Enter on a wrong word says it does not match. Fill in still does not record a score. The type test, added from the VB6 app, does.
 
 ## Other desktop quirks that are fixed
 
@@ -76,6 +76,43 @@ Enter on a wrong word says it does not match. There is still no score.
 - Verses with no category never appeared in the list. They show under “(No category)”.
 - Close hid the edit menu and left the editor panel up. Close returns to Study. A new verse you did not type anything into is dropped, so an accidental New does not save the starter set.
 - Category names are refreshed as you edit. The desktop list updated only when a file was opened.
+
+## VB6 app (smtvb6)
+
+The browser port above started from the VB.NET project. Alan also kept an earlier VB6 app, Scripture Memory 3.2.2 (`smt3.vbp`). That program has the study list and the fill-in drill, and it also has a word search, a type test, and a score file. Those three are now in this app. The VB.NET `.sms` Open/Save path is unchanged.
+
+### Merged
+
+| VB6 feature | In this app |
+| --- | --- |
+| Word search, 16×16 and up, eight directions | Search tab. The grid grows when a verse needs it. Overlapping letters are allowed when they match. |
+| Drag a straight or diagonal line to select a word | Drag across the letters. The line is also accepted backward, so either end can be the start. |
+| Found word returns to the verse | Yes. A repeated word is listed once, and finding it fills every copy. |
+| Clock, and “Time: N minutes N seconds” when the puzzle is finished | Yes. The clock starts when the puzzle is built. |
+| Print the puzzle | **Print puzzle** uses the browser print dialog. |
+| Type test hides the verse | Type tab. |
+| Check, ignoring punctuation and case | **Check**. The default desktop setting (`bolNoPunc`) was on. |
+| “Excellent!” and “(typed) does not match (expected)” | Yes, plus a count of missing or extra words. The desktop extra-word line said “to many”; this says “too many”. |
+| Score in tenths of a second, lower is better, refused after the 15-minute mark | A perfect verse is scored when the time is under 16 minutes, matching `wMinute > 15`. |
+| Three best times for a reference, with a name | The name field replaces the InputBox. Times are kept in `smt.scores.v1`. |
+| `scores.sms` (name, score, reference) | Open a file named `.sms` that has no `<Record>` tags and is those triples. The verse library is left alone. |
+| `.smt` CSV: Reference, Topic, Verse, Version, Name, Score | Open imports the verses. A row with a name and a score above 0 also adds a time. Version is ignored. |
+| Random type test | **Random verse** picks another passage. It does not start by itself after a perfect score. |
+
+### Not merged
+
+| VB6 feature | Why it stayed out |
+| --- | --- |
+| Fill in jumps to the type test when every word is hidden | The VB.NET fill-in is the one this app already shipped. Raising the slider still only hides more words. |
+| Word by word (`byWord` / `getNext`) | Study already shows the verse. This is a paced reveal, not a second practice. |
+| Review window (`frmReview`) | Passed verses were stored in the Windows registry. The Type tab lists the three best times for the open reference instead of a separate window. |
+| Together (`frmTogether`) | A hover list that peeks at the verse. Study already shows the verse you select. |
+| Entry form (`frmEntry`) | The Edit tab already adds and saves verses. |
+| Print cards (`PrintCard`) and `frmPrint` | The card class draws boxes and does not print the verse. `frmPrint` is a Windows label layout. |
+| Splash screen, borderless window, scroll art | Window chrome. |
+| Built-in Navigators list in `initDataOld` | That wording is not public domain, so it is not shipped here. The King James starter set is unchanged. |
+| One score stored back inside a loaded `.smt` row | Save still writes `.sms` only, and that format has no score field. Times stay in the browser. |
+| Punctuation on/off, caps on/off | The type test always ignores punctuation and case, which is how the VB6 app was set by default. |
 
 ## Phone layout
 

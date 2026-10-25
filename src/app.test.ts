@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mountApp, type AppPorts } from "./app.ts";
+import { buildPuzzle } from "./search.ts";
+import { sampleRecords } from "./sample.ts";
 import { STORAGE_KEY } from "./storage.ts";
+import { SCORES_KEY } from "./scores.ts";
 import type { VerseRecord } from "./types.ts";
 
 function setup(ports: Partial<AppPorts> = {}) {
@@ -178,6 +181,98 @@ describe("Scripture Memory Tool", () => {
     verse.value = `${verse.value} Amen.`;
     verse.dispatchEvent(new Event("input"));
     expect(localStorage.getItem(STORAGE_KEY)).toContain("Amen.");
+  });
+
+  it("reveals a word dragged out of the search and can print the puzzle", () => {
+    const harness = setup();
+    click("tab-search");
+    expect(text("search-ref")).toBe("John 3:16");
+    expect(text("search-verse")).toContain("_");
+    expect(document.querySelectorAll(".search-cell").length).toBeGreaterThan(16);
+
+    const verse = sampleRecords()[0]?.verse ?? "";
+    const puzzle = buildPuzzle(verse, () => 0);
+    const placement = puzzle.placements[0];
+    if (!placement) throw new Error("puzzle has no words");
+    const start = placement.cells[0];
+    const end = placement.cells[placement.cells.length - 1];
+    if (!start || !end) throw new Error("word has no cells");
+    const startEl = document.querySelector(`[data-row="${start.row}"][data-col="${start.col}"]`);
+    const endEl = document.querySelector(`[data-row="${end.row}"][data-col="${end.col}"]`);
+    if (!(startEl instanceof HTMLElement) || !(endEl instanceof HTMLElement)) {
+      throw new Error("missing search cells");
+    }
+    startEl.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    endEl.dispatchEvent(new PointerEvent("pointerup", { bubbles: true }));
+    expect(text("status")).toContain(placement.word);
+    expect(text("search-verse").toLowerCase()).toContain(placement.word.toLowerCase());
+
+    click("btn-search-print");
+    expect(harness.printed()).toBe(true);
+    expect(document.getElementById("print-root")?.textContent).toContain(placement.word[0] ?? "A");
+  });
+
+  it("scores a perfect type test without writing the score into the .sms file", () => {
+    let now = 5_000;
+    const harness = setup({ now: () => now });
+    click("tab-type");
+    expect(document.getElementById("view-type")?.textContent).not.toContain("only begotten");
+    expect(text("type-prompt")).toContain("stays hidden");
+    const name = document.getElementById("type-name");
+    const entry = document.getElementById("type-entry");
+    if (!(name instanceof HTMLInputElement) || !(entry instanceof HTMLTextAreaElement)) {
+      throw new Error("missing type fields");
+    }
+    name.value = "Alan";
+    name.dispatchEvent(new Event("input"));
+    const verse = sampleRecords()[0]?.verse ?? "";
+    entry.value = verse.replace(/[.,]/g, "");
+    entry.dispatchEvent(new Event("input"));
+    now = 7_500;
+    click("btn-type-check");
+    expect(text("type-result")).toContain("Excellent!");
+    expect(text("type-result")).toContain("kept for Alan");
+    expect(text("type-best")).toContain("Alan");
+    expect(localStorage.getItem(SCORES_KEY)).toContain("Alan");
+    click("btn-save");
+    expect(harness.downloads[0]).toContain("<SMTFile>");
+    expect(harness.downloads[0]).not.toContain("Alan");
+  });
+
+  it("opens a scores file without replacing verses, and opens a .smt verse list", async () => {
+    const harness = setup();
+    const input = document.getElementById("file-open");
+    if (!(input instanceof HTMLInputElement)) throw new Error("missing file input");
+    const scores = new File(["Alan\n 77\nJohn 3:16\n"], "scores.sms", { type: "text/plain" });
+    setFiles(input, scores);
+    input.dispatchEvent(new Event("change"));
+    await vi.waitFor(() => expect(text("status")).toBe("Opened 1 score from scores.sms."));
+    expect(text("reading-ref")).toBe("John 3:16");
+    expect(harness.confirms.some((message) => message.includes("scores.sms"))).toBe(false);
+    click("tab-type");
+    expect(text("type-best")).toContain("77");
+
+    click("tab-study");
+    const smt = new File(
+      ['"Hope","Comfort","Be still and know","","Alan",41\n'],
+      "hope.smt",
+      { type: "text/plain" },
+    );
+    setFiles(input, smt);
+    input.dispatchEvent(new Event("change"));
+    await vi.waitFor(() => expect(text("reading-ref")).toBe("Hope"));
+    expect(text("reading-verse")).toBe("Be still and know");
+    expect(text("status")).toContain("1 time came with them");
+  });
+
+  it("picks another verse for a random type test", () => {
+    setup();
+    click("tab-type");
+    click("btn-type-random");
+    expect(text("type-ref")).toBe("John 14:6");
+    const entry = document.getElementById("type-entry");
+    if (!(entry instanceof HTMLTextAreaElement)) throw new Error("missing type entry");
+    expect(entry.value).toBe("");
   });
 });
 

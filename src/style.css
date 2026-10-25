@@ -108,10 +108,12 @@ h1 {
 
 .tabs {
   display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   padding: 3px;
   background: #efe6d6;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 1.15rem;
 }
 
 .tab {
@@ -390,6 +392,74 @@ input[type="number"].count {
 
 #fill-entry {
   margin-bottom: 0.2rem;
+}
+
+.search-board {
+  container-type: inline-size;
+  overflow-x: auto;
+  max-width: 100%;
+  margin: 0.2rem 0 0.9rem;
+}
+
+.search-grid {
+  --cell: min(1.7rem, calc((100cqi - 2px * (var(--size) - 1)) / var(--size)));
+  display: grid;
+  grid-template-columns: repeat(var(--size), var(--cell));
+  gap: 2px;
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
+  user-select: none;
+  touch-action: none;
+}
+
+button.search-cell {
+  min-height: 0;
+  width: var(--cell);
+  height: var(--cell);
+  padding: 0;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: #fffdf9;
+  font-family: var(--mono);
+  font-size: calc(var(--cell) * 0.48);
+  line-height: 1;
+}
+
+button.search-cell.found {
+  background: #e5f0df;
+  color: #245c32;
+  border-color: #c5ddb8;
+}
+
+button.search-cell.picked {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: #e2c2ae;
+}
+
+.type-result {
+  white-space: pre-wrap;
+  margin: 0.85rem 0 0.35rem;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  min-height: 1.4em;
+}
+
+.best-list {
+  margin: 0.2rem 0 0;
+  padding-left: 1.15rem;
+}
+
+.best-list .hint {
+  list-style: none;
+  margin-left: -1.15rem;
+}
+
+.print-grid {
+  font-family: var(--mono);
+  letter-spacing: 0.12em;
+  line-height: 1.35;
 }
 
 .print-root {
