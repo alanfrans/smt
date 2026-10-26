@@ -41,21 +41,21 @@ The browser copy uses the same `.sms` text for Open and Save. Between sessions i
 | Previous / next record | Yes. Same messages at the ends: “This is the first record.” / “This is the last record.” |
 | Save `.sms` | Yes. **Save** downloads `scripture.sms`. |
 | Open `.sms` | Yes. A VB6 `.smt` file opens too. Anything else gets “This file is not a Scripture Memory Tool file.” |
-| Fill in: hide N words with underscores | Yes. Slider plus a number, same idea as the trackbar and `txtFillNum`. |
+| Fill in: hide N words with underscores | Yes. Starts at one word. Finishing a round hides one more, up to the whole verse. The slider and number still set the count, same idea as the trackbar and `txtFillNum`. |
 | Type the missing word | Yes. The matching word is written back into the verse. |
 | Print | Yes, via the browser print dialog. The desktop Print button had no code. |
 | Delete (“− Sub”) | Yes, with a confirm. The desktop button had no code. |
 | File > Edit | Yes. The Edit tab opens the current verse. The desktop handler was empty. |
 | File > Exit | Not ported. It ended the Windows process. |
 | Tools buttons Label1, Label3, Label4 | Not ported. They had pictures, no captions, and no code. |
-| Borderless window, red transparency, scroll images, drag to move | Not ported. That is window chrome from `frmSMT.resx`. |
+| Borderless window, red transparency, scroll images, drag to move | The VB6 scroll rollers and bottom edge frame the page. The borderless window, red transparency, and drag-to-move stay out. |
 | Papyrus labels, Courier New drill text | Partially. The drill uses Courier New while words are hidden. Papyrus is not used. |
 | Hover menus | Replaced by visible Study / Edit / Fill in and Open / Save / Print so a phone can reach them. |
 | Scoring, accounts, spaced repetition, packed Bible text | Not in the VB.NET app. Scoring arrived later from the VB6 type test; see below. |
 
 ## Fill-in behavior
 
-`clsSMT` splits the verse on spaces, pushes the words onto a stack, and replaces N of them with underscores of the same length. Opening Fill in set the count to 0, so the verse started fully visible and the slider raised the difficulty. This port does the same.
+`clsSMT` splits the verse on spaces, pushes the words onto a stack, and replaces N of them with underscores of the same length. Opening Fill in set the count to 0, so the verse started fully visible and the slider raised the difficulty. This port opens Fill in with one word hidden. Filling in every blank raises the count by one and starts the next round on its own, until every word is hidden. Finishing that round leaves the verse filled in and does not raise the count again. The slider and the number still set the count directly. A missed word stays on the same count.
 
 The desktop checker (`IsMissingWord`) compared the typed text to the stack and, on a hit, showed a message box that said “Is Missing”. It did not put the word back. It also only listened for A–Z key codes, so a word like `world,` could not be typed. Several index bugs meant the last word was never chosen, a fully hidden verse forgot which positions were blank, and the highlight position skipped the first word.
 
@@ -109,7 +109,7 @@ The browser port above started from the VB.NET project. Alan also kept an earlie
 | Together (`frmTogether`) | A hover list that peeks at the verse. Study already shows the verse you select. |
 | Entry form (`frmEntry`) | The Edit tab already adds and saves verses. |
 | Print cards (`PrintCard`) and `frmPrint` | The card class draws boxes and does not print the verse. `frmPrint` is a Windows label layout. |
-| Splash screen, borderless window, scroll art | Window chrome. |
+| Splash screen, borderless window, scroll art | The splash bitmap is the page title, the gold wordmark sits in the footer, and the scroll pictures frame the verse. The borderless window stays out. |
 | Built-in Navigators list in `initDataOld` | That wording is not public domain, so it is not shipped here. The King James starter set is unchanged. |
 | One score stored back inside a loaded `.smt` row | Save still writes `.sms` only, and that format has no score field. Times stay in the browser. |
 | Punctuation on/off, caps on/off | The type test always ignores punctuation and case, which is how the VB6 app was set by default. |

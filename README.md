@@ -1,6 +1,6 @@
 # Scripture Memory Tool
 
-A browser port of Alan’s Scripture Memory Tool. Study a verse, hide words, search for them in a puzzle, or type the whole verse from memory. Verses stay in this browser. No account.
+A browser port of Alan’s Scripture Memory Tool. Study a verse, hide words, search for them in a puzzle, or type the whole verse from memory. Verses stay in this browser. No account. The header, icon, and scroll edges are the pictures from the classic VB6 app. The original files are in `public/art`. The page uses PNG copies with the flat background removed.
 
 ## Run
 
@@ -17,7 +17,7 @@ Open http://127.0.0.1:4317
 
 - **Study.** Pick a category, then a reference, and read the verse.
 - **Edit.** Add, change, or delete verses. Prev and Next walk the whole library.
-- **Fill in.** The slider hides that many words behind underscores. Type the highlighted blank. A comma or period at the end of a word is optional.
+- **Fill in.** The first round hides one word. Each time you fill in every blank, the next round hides one more word, until the whole verse is hidden. Finishing that round stops there and leaves the verse filled in. The slider still sets how many words are hidden. Type the highlighted blank. A comma or period at the end of a word is optional.
 - **Search.** The verse’s words are hidden in a letter grid. Drag a straight line across, down, or on a diagonal. The word goes back into the verse. **New puzzle** shuffles it. **Print puzzle** prints the grid.
 - **Type.** The verse stays hidden. Type it and press **Check**. Punctuation is ignored. A perfect verse under 16 minutes is kept as a score, in tenths of a second, the same unit as the older desktop app. The three fastest times for that reference are listed. **Random verse** jumps to another passage.
 - **Open / Save.** `.sms` files use the desktop app’s text format, so a file saved here can be opened there, and the other way around. A VB6 `.smt` file opens as verses. A `scores.sms` list opens as times and does not replace the verses.
