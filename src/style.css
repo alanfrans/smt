@@ -90,13 +90,29 @@ h1 {
   font-size: clamp(1.55rem, 2.4vw, 2.05rem);
   font-weight: 600;
   letter-spacing: -0.02em;
-  line-height: 1.15;
+  line-height: 1;
+}
+
+.wordmark {
+  display: block;
+  width: min(158px, 44vw);
+  height: auto;
 }
 
 .lede {
-  margin: 0.3rem 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.45rem 0 0;
   color: var(--muted);
   max-width: 36rem;
+}
+
+.crest {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  image-rendering: pixelated;
 }
 
 .mast-actions {
@@ -136,6 +152,58 @@ h1 {
 
 .ghost {
   background: transparent;
+}
+
+.scroll {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.roller {
+  width: 28px;
+  flex: 0 0 28px;
+  display: flex;
+  flex-direction: column;
+}
+
+.roller .cap {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.roller .shaft {
+  flex: 1 1 auto;
+  min-height: 1.25rem;
+  margin-top: -2px;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.roller .shaft + .cap {
+  margin-top: -3px;
+}
+
+.roller-left .shaft {
+  background-image: url("/art/lscroll-mid.png");
+}
+
+.roller-right .shaft {
+  background-image: url("/art/rscroll-mid.png");
+}
+
+.scroll-sheet {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0.45rem 0;
+}
+
+.scroll-curl {
+  display: block;
+  width: min(220px, 72%);
+  height: auto;
+  margin: 0.45rem auto 0;
 }
 
 .panel {
@@ -471,6 +539,13 @@ button.search-cell.picked {
   font-size: 0.88rem;
 }
 
+.colophon-mark {
+  display: block;
+  width: min(148px, 42vw);
+  height: auto;
+  margin: 0 0 0.45rem;
+}
+
 .colophon code {
   font-family: var(--mono);
   font-size: 0.86em;
@@ -511,6 +586,11 @@ button.search-cell.picked {
   .drill {
     padding: 1.25rem 1.4rem 1.4rem;
   }
+
+  .roller {
+    width: 42px;
+    flex-basis: 42px;
+  }
 }
 
 @media print {
@@ -521,8 +601,14 @@ button.search-cell.picked {
   .mast,
   #status,
   main,
+  .roller,
+  .scroll-curl,
   .colophon {
     display: none !important;
+  }
+
+  .scroll-sheet {
+    margin: 0;
   }
 
   .print-root {

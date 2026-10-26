@@ -2,8 +2,13 @@ export const appMarkup = `
   <div class="page">
     <header class="mast">
       <div class="brand">
-        <h1>Scripture Memory Tool</h1>
-        <p class="lede">Read a passage, search for its words, or type it from memory.</p>
+        <h1>
+          <img class="wordmark" src="/art/smt-logo.png" alt="Scripture Memory Tool" width="237" height="247" />
+        </h1>
+        <p class="lede">
+          <img class="crest" src="/favicon.png" alt="" width="32" height="32" />
+          Read a passage, search for its words, or type it from memory.
+        </p>
       </div>
       <div class="mast-actions">
         <nav class="tabs" role="tablist" aria-label="Screens">
@@ -25,7 +30,14 @@ export const appMarkup = `
 
     <p id="status" class="status" role="status" hidden></p>
 
-    <main>
+    <div class="scroll">
+      <div class="roller roller-left" aria-hidden="true">
+        <img class="cap" src="/art/lscroll-top.png" alt="" />
+        <div class="shaft"></div>
+        <img class="cap" src="/art/lscroll-bot.png" alt="" />
+      </div>
+      <div class="scroll-sheet">
+        <main>
       <section id="view-study" role="tabpanel" aria-labelledby="tab-study">
         <div class="study-layout">
           <aside class="panel picker">
@@ -140,11 +152,20 @@ export const appMarkup = `
           <ul id="type-best" class="best-list" aria-labelledby="type-best-label"></ul>
         </div>
       </section>
-    </main>
+        </main>
+        <img class="scroll-curl" src="/art/bscroll.png" alt="" />
+      </div>
+      <div class="roller roller-right" aria-hidden="true">
+        <img class="cap" src="/art/rscroll-top.png" alt="" />
+        <div class="shaft"></div>
+        <img class="cap" src="/art/rscroll-bot.png" alt="" />
+      </div>
+    </div>
 
     <section id="print-root" class="print-root" aria-hidden="true"></section>
 
     <footer class="colophon">
+      <img class="colophon-mark" src="/art/wordmark.png" alt="" width="142" height="92" />
       Verses stay in this browser. Save downloads an <code>.sms</code> file the desktop Scripture Memory Tool can open. Type-test times stay in this browser too, and are not written into that file.
     </footer>
   </div>

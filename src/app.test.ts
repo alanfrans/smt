@@ -47,6 +47,19 @@ function text(id: string) {
 describe("Scripture Memory Tool", () => {
   beforeEach(() => localStorage.clear());
 
+  it("shows the classic title, icon, and scroll", () => {
+    setup();
+    const wordmark = document.querySelector(".wordmark");
+    if (!(wordmark instanceof HTMLImageElement)) throw new Error("missing wordmark");
+    expect(wordmark.alt).toBe("Scripture Memory Tool");
+    expect(wordmark.getAttribute("src")).toBe("/art/smt-logo.png");
+    expect(document.querySelector(".crest")?.getAttribute("src")).toBe("/favicon.png");
+    expect(document.querySelector(".roller-left .shaft")).toBeTruthy();
+    expect(document.querySelector(".roller-right .shaft")).toBeTruthy();
+    expect(document.querySelector(".scroll-curl")?.getAttribute("src")).toBe("/art/bscroll.png");
+    expect(document.querySelector(".colophon-mark")?.getAttribute("src")).toBe("/art/wordmark.png");
+  });
+
   it("opens on a starter verse and filters by category", () => {
     setup();
     expect(text("reading-ref")).toBe("John 3:16");

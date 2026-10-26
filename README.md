@@ -1,6 +1,6 @@
 # Scripture Memory Tool
 
-A browser port of Alan’s Scripture Memory Tool. Study a verse, hide words, search for them in a puzzle, or type the whole verse from memory. Verses stay in this browser. No account.
+A browser port of Alan’s Scripture Memory Tool. Study a verse, hide words, search for them in a puzzle, or type the whole verse from memory. Verses stay in this browser. No account. The header, icon, and scroll edges are the pictures from the classic VB6 app. The original files are in `public/art`. The page uses PNG copies with the flat background removed.
 
 ## Run
 

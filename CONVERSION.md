@@ -48,7 +48,7 @@ The browser copy uses the same `.sms` text for Open and Save. Between sessions i
 | File > Edit | Yes. The Edit tab opens the current verse. The desktop handler was empty. |
 | File > Exit | Not ported. It ended the Windows process. |
 | Tools buttons Label1, Label3, Label4 | Not ported. They had pictures, no captions, and no code. |
-| Borderless window, red transparency, scroll images, drag to move | Not ported. That is window chrome from `frmSMT.resx`. |
+| Borderless window, red transparency, scroll images, drag to move | The VB6 scroll rollers and bottom edge frame the page. The borderless window, red transparency, and drag-to-move stay out. |
 | Papyrus labels, Courier New drill text | Partially. The drill uses Courier New while words are hidden. Papyrus is not used. |
 | Hover menus | Replaced by visible Study / Edit / Fill in and Open / Save / Print so a phone can reach them. |
 | Scoring, accounts, spaced repetition, packed Bible text | Not in the VB.NET app. Scoring arrived later from the VB6 type test; see below. |
@@ -109,7 +109,7 @@ The browser port above started from the VB.NET project. Alan also kept an earlie
 | Together (`frmTogether`) | A hover list that peeks at the verse. Study already shows the verse you select. |
 | Entry form (`frmEntry`) | The Edit tab already adds and saves verses. |
 | Print cards (`PrintCard`) and `frmPrint` | The card class draws boxes and does not print the verse. `frmPrint` is a Windows label layout. |
-| Splash screen, borderless window, scroll art | Window chrome. |
+| Splash screen, borderless window, scroll art | The splash bitmap is the page title, the gold wordmark sits in the footer, and the scroll pictures frame the verse. The borderless window stays out. |
 | Built-in Navigators list in `initDataOld` | That wording is not public domain, so it is not shipped here. The King James starter set is unchanged. |
 | One score stored back inside a loaded `.smt` row | Save still writes `.sms` only, and that format has no score field. Times stay in the browser. |
 | Punctuation on/off, caps on/off | The type test always ignores punctuation and case, which is how the VB6 app was set by default. |
