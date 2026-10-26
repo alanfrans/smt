@@ -115,9 +115,10 @@ describe("Scripture Memory Tool", () => {
   it("hides words and accepts the next blank without its trailing punctuation", () => {
     setup();
     click("tab-fill");
-    expect(text("fill-hint")).toContain("Raise Words hidden");
     const count = document.getElementById("fill-count");
     if (!(count instanceof HTMLInputElement)) throw new Error("missing count");
+    expect(count.value).toBe("1");
+    expect(document.querySelectorAll("#fill-verse .blank")).toHaveLength(1);
     count.value = "25";
     count.dispatchEvent(new Event("input"));
     expect(document.querySelector(".blank.current")?.textContent).toBe("___");
@@ -132,6 +133,83 @@ describe("Scripture Memory Tool", () => {
     entry.dispatchEvent(new Event("input"));
     entry.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(text("status")).toBe("That does not match the next blank.");
+    expect(count.value).toBe("25");
+  });
+
+  it("raises the hidden-word count and starts a new round after a fill-in success", () => {
+    setup({
+      load: () => ({
+        ok: true,
+        records: [verse("Alpha beta gamma")],
+      }),
+    });
+    click("tab-fill");
+    const count = fillInput("fill-count");
+    const entry = fillInput("fill-entry");
+    expect(count.value).toBe("1");
+    expect(blankGlyphs()).toEqual(["_____"]);
+
+    entry.value = "nope";
+    entry.dispatchEvent(new Event("input"));
+    entry.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    expect(text("status")).toBe("That does not match the next blank.");
+    expect(count.value).toBe("1");
+    expect(blankGlyphs()).toEqual(["_____"]);
+
+    entry.value = "Alpha";
+    entry.dispatchEvent(new Event("input"));
+    expect(count.value).toBe("2");
+    expect(fillInput("fill-range").value).toBe("2");
+    expect(blankGlyphs()).toEqual(["_____", "____"]);
+    expect(document.querySelector(".blank.current")).not.toBeNull();
+    expect(entry.value).toBe("");
+    expect(entry.disabled).toBe(false);
+    expect(text("status")).toBe("Filled in. Now hiding 2 words.");
+    expect(text("fill-verse")).toContain("gamma");
+
+    typeBlank("Alpha");
+    expect(count.value).toBe("2");
+    typeBlank("beta");
+    expect(count.value).toBe("3");
+    expect(blankGlyphs()).toHaveLength(3);
+    expect(text("status")).toBe("Filled in. Now hiding 3 words.");
+
+    typeBlank("Alpha");
+    typeBlank("beta");
+    typeBlank("gamma");
+    expect(count.value).toBe("3");
+    expect(fillInput("fill-range").max).toBe("3");
+    expect(document.querySelectorAll("#fill-verse .blank")).toHaveLength(0);
+    expect(text("status")).toBe("You filled in the whole verse.");
+  });
+
+  it("does not hide more words than the verse has after the full fill-in round", () => {
+    setup({
+      load: () => ({
+        ok: true,
+        records: [verse("Alpha beta gamma")],
+      }),
+    });
+    click("tab-fill");
+    const count = fillInput("fill-count");
+    const range = fillInput("fill-range");
+    count.value = "3";
+    count.dispatchEvent(new Event("input"));
+    expect(blankGlyphs()).toEqual(["_____", "____", "_____"]);
+
+    typeBlank("Alpha");
+    typeBlank("beta");
+    typeBlank("gamma");
+
+    expect(count.value).toBe("3");
+    expect(range.value).toBe("3");
+    expect(range.max).toBe("3");
+    expect(document.querySelectorAll("#fill-verse .blank")).toHaveLength(0);
+    expect(text("fill-verse")).toBe("Alpha beta gamma");
+    expect(text("status")).toBe("You filled in the whole verse.");
+    expect(text("fill-prompt")).toBe("Verse complete");
+    expect(text("fill-hint")).toBe("You filled in the whole verse.");
+    expect(fillInput("fill-entry").disabled).toBe(true);
   });
 
   it("saves an .sms file and replaces the library on open", async () => {
@@ -275,6 +353,26 @@ describe("Scripture Memory Tool", () => {
     expect(entry.value).toBe("");
   });
 });
+
+function verse(text: string): VerseRecord {
+  return { id: "short", topic: "Test", reference: "Test 1:1", verse: text };
+}
+
+function fillInput(id: string): HTMLInputElement {
+  const element = document.getElementById(id);
+  if (!(element instanceof HTMLInputElement)) throw new Error(`missing ${id}`);
+  return element;
+}
+
+function blankGlyphs(): string[] {
+  return [...document.querySelectorAll("#fill-verse .blank")].map((node) => node.textContent ?? "");
+}
+
+function typeBlank(word: string) {
+  const entry = fillInput("fill-entry");
+  entry.value = word;
+  entry.dispatchEvent(new Event("input"));
+}
 
 function setFiles(input: HTMLInputElement, file: File) {
   const transfer = new DataTransfer();

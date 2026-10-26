@@ -265,7 +265,7 @@ export function mountApp(root: HTMLElement, ports: Partial<AppPorts> = {}): void
   function showView(next: ViewName) {
     if (view === "edit" && next !== "edit") discardUnsavedBlank();
     if (next === "fill" && view !== "fill") {
-      hiddenCount = 0;
+      hiddenCount = 1;
       drillId = null;
       typed = "";
     }
@@ -498,9 +498,20 @@ export function mountApp(root: HTMLElement, ports: Partial<AppPorts> = {}): void
       hidden[index] = false;
       typed = "";
       const remaining = firstHiddenIndex(hidden) >= 0;
-      statusMessage = remaining
-        ? "That word is back in the verse."
-        : "Every hidden word is filled in.";
+      if (remaining) {
+        statusMessage = "That word is back in the verse.";
+      } else if (hiddenCount < words.length) {
+        // A finished round hides one more word and starts again, up to the whole verse.
+        hiddenCount += 1;
+        drillId = null;
+        focusFill = true;
+        statusMessage =
+          hiddenCount === 1
+            ? "Filled in. Now hiding 1 word."
+            : `Filled in. Now hiding ${hiddenCount} words.`;
+      } else {
+        statusMessage = "You filled in the whole verse.";
+      }
       statusKind = "info";
       render();
       const currentBlank = fillVerse.querySelector(".current");
@@ -694,7 +705,10 @@ export function mountApp(root: HTMLElement, ports: Partial<AppPorts> = {}): void
         : "";
     } else if (!remaining) {
       fillPrompt.textContent = "Verse complete";
-      fillHint.textContent = "Every hidden word is filled in. Raise the slider to hide more.";
+      fillHint.textContent =
+        words.length > 0 && hiddenCount >= words.length
+          ? "You filled in the whole verse."
+          : "Every hidden word is filled in. Raise the slider to hide more.";
     } else {
       fillPrompt.textContent = "Type the next blank";
       fillHint.textContent = "The highlighted blank is next. Punctuation at the end of a word is optional.";

@@ -41,7 +41,7 @@ The browser copy uses the same `.sms` text for Open and Save. Between sessions i
 | Previous / next record | Yes. Same messages at the ends: “This is the first record.” / “This is the last record.” |
 | Save `.sms` | Yes. **Save** downloads `scripture.sms`. |
 | Open `.sms` | Yes. A VB6 `.smt` file opens too. Anything else gets “This file is not a Scripture Memory Tool file.” |
-| Fill in: hide N words with underscores | Yes. Slider plus a number, same idea as the trackbar and `txtFillNum`. |
+| Fill in: hide N words with underscores | Yes. Starts at one word. Finishing a round hides one more, up to the whole verse. The slider and number still set the count, same idea as the trackbar and `txtFillNum`. |
 | Type the missing word | Yes. The matching word is written back into the verse. |
 | Print | Yes, via the browser print dialog. The desktop Print button had no code. |
 | Delete (“− Sub”) | Yes, with a confirm. The desktop button had no code. |
@@ -55,7 +55,7 @@ The browser copy uses the same `.sms` text for Open and Save. Between sessions i
 
 ## Fill-in behavior
 
-`clsSMT` splits the verse on spaces, pushes the words onto a stack, and replaces N of them with underscores of the same length. Opening Fill in set the count to 0, so the verse started fully visible and the slider raised the difficulty. This port does the same.
+`clsSMT` splits the verse on spaces, pushes the words onto a stack, and replaces N of them with underscores of the same length. Opening Fill in set the count to 0, so the verse started fully visible and the slider raised the difficulty. This port opens Fill in with one word hidden. Filling in every blank raises the count by one and starts the next round on its own, until every word is hidden. Finishing that round leaves the verse filled in and does not raise the count again. The slider and the number still set the count directly. A missed word stays on the same count.
 
 The desktop checker (`IsMissingWord`) compared the typed text to the stack and, on a hit, showed a message box that said “Is Missing”. It did not put the word back. It also only listened for A–Z key codes, so a word like `world,` could not be typed. Several index bugs meant the last word was never chosen, a fully hidden verse forgot which positions were blank, and the highlight position skipped the first word.
 
