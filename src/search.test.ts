@@ -7,6 +7,8 @@ import {
   matchWord,
   puzzleWords,
   tryPlaceWord,
+  MOBILE_SHAPE,
+  DESKTOP_SHAPE,
   wordKey,
 } from "./search.ts";
 
@@ -62,5 +64,42 @@ describe("word search", () => {
     expect(matchWord(lettersOnLine(grid, back ?? []), ["CAT"])).toBe("CAT");
     expect(matchWord("DOG", ["CAT"])).toBeNull();
     expect(matchWord("A", ["CAT"])).toBeNull();
+  });
+
+  it("builds a tall 10 x 24 grid for phones and still hides every word", () => {
+    let n = 0;
+    const lcg = () => {
+      n = (n * 9301 + 49297) % 233280;
+      return n / 233280;
+    };
+    for (const r of [() => 0, () => 0.5, () => 0.999, lcg]) {
+      const puzzle = buildPuzzle(JOHN, r, MOBILE_SHAPE);
+      expect(puzzle.cols).toBe(10);
+      expect(puzzle.rows).toBeGreaterThanOrEqual(24);
+      expect(puzzle.grid).toHaveLength(puzzle.rows);
+      for (const row of puzzle.grid) expect(row).toHaveLength(10);
+      // EVERLASTING is 11 letters, longer than the 10-wide grid.
+      expect(puzzle.words).toContain("EVERLASTING");
+      for (const word of puzzle.words) expect(gridContains(puzzle.grid, word)).toBe(true);
+      for (const placement of puzzle.placements) {
+        for (const cell of placement.cells) {
+          expect(cell.col).toBeLessThan(10);
+          expect(cell.row).toBeLessThan(puzzle.rows);
+        }
+      }
+    }
+  });
+
+  it("places words in a non-square grid without running off the side", () => {
+    const grid = Array.from({ length: 4 }, () => ["", ""]);
+    expect(tryPlaceWord(grid, "ABC", 0, 0, 0, 1)).toBeNull();
+    expect(tryPlaceWord(grid, "ABCD", 0, 1, 1, 0)?.map((cell) => cell.row)).toEqual([0, 1, 2, 3]);
+    expect(gridContains(grid, "ABCD")).toBe(true);
+  });
+
+  it("keeps the desktop grid square at 16", () => {
+    const puzzle = buildPuzzle(JOHN, () => 0, DESKTOP_SHAPE);
+    expect(puzzle.rows).toBe(puzzle.cols);
+    expect(puzzle.cols).toBeGreaterThanOrEqual(16);
   });
 });

@@ -15,7 +15,10 @@ export type Placement = {
 };
 
 export type Puzzle = {
+  /** Largest side, kept for callers that only need "is there a grid". */
   size: number;
+  rows: number;
+  cols: number;
   grid: string[][];
   words: string[];
   placements: Placement[];
@@ -62,9 +65,15 @@ function indexOf(rng: () => number, span: number): number {
   return scaled;
 }
 
-function emptyGrid(size: number): string[][] {
-  return Array.from({ length: size }, () => Array.from({ length: size }, () => ""));
+function emptyGrid(rows: number, cols: number = rows): string[][] {
+  return Array.from({ length: rows }, () => Array.from({ length: cols }, () => ""));
 }
+
+export type GridShape = { rows: number; cols: number };
+
+/** Desktop puzzles are square; phones get a tall grid that fits a narrow screen. */
+export const DESKTOP_SHAPE: GridShape = { rows: 16, cols: 16 };
+export const MOBILE_SHAPE: GridShape = { rows: 24, cols: 10 };
 
 export function tryPlaceWord(
   grid: string[][],
@@ -74,11 +83,12 @@ export function tryPlaceWord(
   dr: number,
   dc: number,
 ): CellPos[] | null {
-  const size = grid.length;
+  const rows = grid.length;
+  const cols = grid[0]?.length ?? 0;
   for (let i = 0; i < word.length; i++) {
     const r = row + dr * i;
     const c = col + dc * i;
-    if (r < 0 || c < 0 || r >= size || c >= size) return null;
+    if (r < 0 || c < 0 || r >= rows || c >= cols) return null;
     const letter = grid[r]?.[c] ?? "";
     const next = word[i] ?? "";
     if (letter && letter !== next) return null;
@@ -96,17 +106,18 @@ export function tryPlaceWord(
 }
 
 function placeOne(grid: string[][], word: string, rng: () => number): Placement | null {
-  const size = grid.length;
-  const tries = size * 12;
+  const rows = grid.length;
+  const cols = grid[0]?.length ?? 0;
+  const tries = Math.max(rows, cols) * 12;
   for (let attempt = 0; attempt < tries; attempt++) {
-    const row = indexOf(rng, size);
-    const col = indexOf(rng, size);
+    const row = indexOf(rng, rows);
+    const col = indexOf(rng, cols);
     const direction = DIRECTIONS[indexOf(rng, DIRECTIONS.length)] ?? DIRECTIONS[0];
     const cells = tryPlaceWord(grid, word, row, col, direction[0], direction[1]);
     if (cells) return { word, cells };
   }
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
       for (const [dr, dc] of DIRECTIONS) {
         const cells = tryPlaceWord(grid, word, row, col, dr, dc);
         if (cells) return { word, cells };
@@ -116,21 +127,21 @@ function placeOne(grid: string[][], word: string, rng: () => number): Placement 
   return null;
 }
 
-function placeAll(words: readonly string[], size: number, rng: () => number): Puzzle | null {
-  const grid = emptyGrid(size);
+function placeAll(words: readonly string[], rows: number, cols: number, rng: () => number): Puzzle | null {
+  const grid = emptyGrid(rows, cols);
   const placements: Placement[] = [];
   for (const word of words) {
     const placed = placeOne(grid, word, rng);
     if (!placed) return null;
     placements.push(placed);
   }
-  return { size, grid, words: [...words], placements };
+  return { size: Math.max(rows, cols), rows, cols, grid, words: [...words], placements };
 }
 
 function fallback(words: readonly string[]): Puzzle {
   const longest = words.reduce((max, word) => Math.max(max, word.length), 1);
   const size = Math.max(words.length, longest, 1);
-  const grid = emptyGrid(size);
+  const grid = emptyGrid(size, size);
   const placements: Placement[] = [];
   words.forEach((word, row) => {
     const cells: CellPos[] = [];
@@ -142,7 +153,7 @@ function fallback(words: readonly string[]): Puzzle {
     }
     placements.push({ word, cells });
   });
-  return { size, grid, words: [...words], placements };
+  return { size, rows: size, cols: size, grid, words: [...words], placements };
 }
 
 function fillBlanks(grid: string[][], rng: () => number) {
@@ -157,23 +168,32 @@ function fillBlanks(grid: string[][], rng: () => number) {
 export function buildPuzzle(
   verse: string,
   rng: () => number = Math.random,
-  preferred = 16,
+  preferred: number | GridShape = 16,
 ): Puzzle {
+  const shape = typeof preferred === "number" ? { rows: preferred, cols: preferred } : preferred;
   const ranked = puzzleWords(verse)
     .map((word, order) => ({ word, order }))
     .sort((a, b) => b.word.length - a.word.length || a.order - b.order)
     .map((item) => item.word);
-  if (!ranked.length) return { size: 0, grid: [], words: [], placements: [] };
+  if (!ranked.length) return { size: 0, rows: 0, cols: 0, grid: [], words: [], placements: [] };
 
   const longest = ranked.reduce((max, word) => Math.max(max, word.length), 1);
-  let size = Math.max(preferred, longest);
-  const maxSize = Math.max(size + 8, Math.min(32, longest + ranked.length));
+  // A word only has to fit along the long side (vertical); short side stays as asked.
+  let rows = Math.max(shape.rows, shape.rows >= shape.cols ? longest : 0);
+  let cols = Math.max(shape.cols, shape.cols > shape.rows ? longest : 0);
+  if (Math.max(rows, cols) < longest) rows = longest;
+  const growRows = rows >= cols;
+  const start = growRows ? rows : cols;
+  const limit = Math.max(start + 8, Math.min(32, longest + ranked.length));
   let puzzle: Puzzle | null = null;
-  while (size <= maxSize && !puzzle) {
+  while ((growRows ? rows : cols) <= limit && !puzzle) {
     for (let tryNumber = 0; tryNumber < 8 && !puzzle; tryNumber++) {
-      puzzle = placeAll(ranked, size, rng);
+      puzzle = placeAll(ranked, rows, cols, rng);
     }
-    if (!puzzle) size += 1;
+    if (!puzzle) {
+      if (growRows) rows += 1;
+      else cols += 1;
+    }
   }
   if (!puzzle) puzzle = fallback(ranked);
   fillBlanks(puzzle.grid, rng);
@@ -214,16 +234,17 @@ export function matchWord(selection: string, remaining: readonly string[]): stri
 
 export function gridContains(grid: readonly (readonly string[])[], word: string): boolean {
   const target = word.toUpperCase();
-  const size = grid.length;
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
+  const rows = grid.length;
+  const cols = grid[0]?.length ?? 0;
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
       for (const [dr, dc] of DIRECTIONS) {
         let spelled = "";
         let inside = true;
         for (let i = 0; i < target.length; i++) {
           const r = row + dr * i;
           const c = col + dc * i;
-          if (r < 0 || c < 0 || r >= size || c >= size) {
+          if (r < 0 || c < 0 || r >= rows || c >= cols) {
             inside = false;
             break;
           }

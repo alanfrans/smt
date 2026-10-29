@@ -193,13 +193,36 @@ h1 {
   grid-column: 3;
 }
 
+/*
+ * The roller art is drawn as a 9-slice: the knobbed ends keep their natural
+ * aspect and only the plain middle of the rod stretches with the panel.
+ * Slice lines sit where the rod is a near-constant width (measured from the PNGs).
+ * The <img> stays in the markup for the alt-free asset reference but is hidden.
+ */
 .roller .roll {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: fill;
+  display: none;
+}
+
+.roller-left {
+  border-style: solid;
+  border-color: transparent;
+  border-width: 0;
+  border-image-source: url("/art/leftscroll.png");
+  border-image-slice: 270 0 240 0 fill;
+  border-image-width: 72px 0 64px 0;
+  border-image-repeat: stretch;
+  min-height: 140px;
+}
+
+.roller-right {
+  border-style: solid;
+  border-color: transparent;
+  border-width: 0;
+  border-image-source: url("/art/rightscroll.png");
+  border-image-slice: 255 0 263 0 fill;
+  border-image-width: 77px 0 79px 0;
+  border-image-repeat: stretch;
+  min-height: 160px;
 }
 
 .scroll-sheet {
@@ -484,6 +507,7 @@ input[type="number"].count {
   --cell: min(1.7rem, calc((100cqi - 2px * (var(--size) - 1)) / var(--size)));
   display: grid;
   grid-template-columns: repeat(var(--size), var(--cell));
+  grid-auto-rows: var(--cell);
   gap: 2px;
   width: max-content;
   max-width: 100%;
@@ -561,6 +585,26 @@ button.search-cell.picked {
 .colophon code {
   font-family: var(--mono);
   font-size: 0.86em;
+}
+
+@media (max-width: 640px) {
+  .scroll {
+    display: block;
+  }
+
+  .roller {
+    display: none;
+  }
+
+  .scroll-sheet {
+    margin: 0;
+  }
+
+  /* Tall 10-wide puzzle: let cells grow to fill the width for touch. */
+  .search-grid.tall {
+    --cell: min(2.6rem, calc((100cqi - 2px * (var(--size) - 1)) / var(--size)));
+    width: 100%;
+  }
 }
 
 @media (min-width: 840px) {

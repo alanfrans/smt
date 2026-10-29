@@ -17,6 +17,8 @@ import {
 } from "./scores.ts";
 import {
   buildPuzzle,
+  DESKTOP_SHAPE,
+  MOBILE_SHAPE,
   cellsOnLine,
   lettersOnLine,
   matchWord,
@@ -757,10 +759,16 @@ export function mountApp(root: HTMLElement, ports: Partial<AppPorts> = {}): void
     }, 500);
   }
 
+  const compactQuery =
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia("(max-width: 640px)")
+      : null;
+  const isCompact = () => compactQuery?.matches === true;
+
   function ensureSearch() {
     const record = selected();
     const text = record?.verse ?? "";
-    const key = `${record?.id ?? ""}\u0000${text}`;
+    const key = `${record?.id ?? ""}\u0000${text}\u0000${isCompact() ? "m" : "d"}`;
     if (key === searchKey && searchPuzzle) return;
     searchKey = key;
     searchFound = new Set();
@@ -768,11 +776,11 @@ export function mountApp(root: HTMLElement, ports: Partial<AppPorts> = {}): void
     searchAnchor = null;
     const words = record && !isBlank(record) ? puzzleWords(text) : [];
     if (!words.length) {
-      searchPuzzle = { size: 0, grid: [], words: [], placements: [] };
+      searchPuzzle = { size: 0, rows: 0, cols: 0, grid: [], words: [], placements: [] };
       searchStarted = null;
       return;
     }
-    searchPuzzle = buildPuzzle(text, io.random);
+    searchPuzzle = buildPuzzle(text, io.random, isCompact() ? MOBILE_SHAPE : DESKTOP_SHAPE);
     searchStarted = io.now();
   }
 
@@ -805,14 +813,16 @@ export function mountApp(root: HTMLElement, ports: Partial<AppPorts> = {}): void
       searchBoard.dataset.signature = "";
       return;
     }
-    const signature = `${puzzle.size}:${[...searchFound].sort().join(",")}:${puzzle.grid.map((row) => row.join("")).join("/")}`;
+    const signature = `${puzzle.rows}x${puzzle.cols}:${[...searchFound].sort().join(",")}:${puzzle.grid.map((row) => row.join("")).join("/")}`;
     if (searchBoard.dataset.signature === signature) return;
     searchBoard.dataset.signature = signature;
     searchBoard.replaceChildren();
     const grid = document.createElement("div");
     grid.className = "search-grid";
     grid.setAttribute("role", "grid");
-    grid.style.setProperty("--size", String(puzzle.size));
+    grid.style.setProperty("--size", String(puzzle.cols));
+    grid.style.setProperty("--rows", String(puzzle.rows));
+    grid.classList.toggle("tall", puzzle.rows > puzzle.cols);
     const foundCells = new Set<string>();
     for (const placement of puzzle.placements) {
       if (!searchFound.has(placement.word)) continue;
@@ -1168,6 +1178,15 @@ export function mountApp(root: HTMLElement, ports: Partial<AppPorts> = {}): void
   must<HTMLButtonElement>(root, "btn-search-print").addEventListener("click", printPuzzle);
   must<HTMLButtonElement>(root, "btn-type-check").addEventListener("click", checkTypedVerse);
   must<HTMLButtonElement>(root, "btn-type-random").addEventListener("click", randomVerse);
+
+  // Crossing the phone breakpoint swaps between the square and the tall grid.
+  const onCompactChange = () => {
+    if (view === "search") render();
+  };
+  if (compactQuery) {
+    if (typeof compactQuery.addEventListener === "function") compactQuery.addEventListener("change", onCompactChange);
+    else if (typeof compactQuery.addListener === "function") compactQuery.addListener(onCompactChange);
+  }
 
   searchBoard.addEventListener("pointerdown", (event) => {
     if (view !== "search" || !searchPuzzle) return;
