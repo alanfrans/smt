@@ -157,17 +157,32 @@ h1 {
 }
 
 .scroll {
-  display: flex;
+  --roller: 36px;
+  --rod-overlap: 4px;
+  display: grid;
+  grid-template-columns: var(--roller) minmax(0, 1fr) var(--roller);
+  grid-template-rows: minmax(0, 1fr) auto;
   align-items: stretch;
   min-width: 0;
+  min-height: 100%;
 }
 
 .roller {
-  width: 36px;
-  flex: 0 0 36px;
+  width: var(--roller);
   display: flex;
   flex-direction: column;
+  grid-row: 1 / span 2;
+  z-index: 1;
+  pointer-events: none;
   filter: drop-shadow(0 4px 8px rgba(36, 48, 72, 0.12));
+}
+
+.roller-left {
+  grid-column: 1;
+}
+
+.roller-right {
+  grid-column: 3;
 }
 
 .roller .cap {
@@ -179,13 +194,14 @@ h1 {
 .roller .shaft {
   flex: 1 1 auto;
   min-height: 1.25rem;
-  margin-top: -2px;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
+  margin-top: -6px;
+  background-repeat: repeat-y;
+  background-size: 100% auto;
+  background-position: center top;
 }
 
-.roller .shaft + .cap {
-  margin-top: -3px;
+.roller .cap-bot {
+  margin-top: -8px;
 }
 
 .roller-left .shaft {
@@ -197,16 +213,30 @@ h1 {
 }
 
 .scroll-sheet {
-  flex: 1 1 auto;
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  margin: 0.45rem 0;
+  margin: 0.35rem calc(var(--rod-overlap) * -1) 0;
+  z-index: 0;
+}
+
+.scroll-sheet > .panel {
+  flex: 1 1 auto;
+  border-radius: 12px 12px 0 0;
+  border-bottom-color: transparent;
 }
 
 .scroll-curl {
   display: block;
-  width: min(220px, 72%);
-  height: auto;
-  margin: 0.45rem auto 0;
+  grid-column: 2;
+  grid-row: 2;
+  width: 100%;
+  height: 18px;
+  margin: -1px 0 0;
+  object-fit: fill;
+  z-index: 2;
   filter: drop-shadow(0 3px 6px rgba(36, 48, 72, 0.12));
 }
 
@@ -221,6 +251,7 @@ h1 {
   display: grid;
   gap: 0.85rem;
   min-width: 0;
+  align-items: start;
 }
 
 .picker,
@@ -563,7 +594,11 @@ button.search-cell.picked {
 
   .study-layout {
     grid-template-columns: minmax(230px, 280px) minmax(0, 1fr);
-    align-items: start;
+    align-items: stretch;
+  }
+
+  .study-layout > .scroll {
+    min-height: 100%;
   }
 
   .picker {
@@ -590,11 +625,6 @@ button.search-cell.picked {
   .editor,
   .drill {
     padding: 1.25rem 1.4rem 1.4rem;
-  }
-
-  .roller {
-    width: 42px;
-    flex-basis: 42px;
   }
 }
 

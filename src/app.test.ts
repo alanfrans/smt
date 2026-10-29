@@ -58,6 +58,10 @@ describe("Scripture Memory Tool", () => {
     expect(document.querySelector(".roller-right .shaft")).toBeTruthy();
     expect(document.querySelector(".scroll-curl")?.getAttribute("src")).toBe("/art/bscroll.png");
     expect(document.querySelector(".colophon-mark")?.getAttribute("src")).toBe("/art/wordmark.png");
+    expect(document.querySelector(".scroll .picker")).toBeNull();
+    expect(document.querySelector(".scroll .reading")).toBeTruthy();
+    expect(document.querySelector(".study-layout > .picker")).toBeTruthy();
+    expect(document.querySelector(".study-layout > .scroll")).toBeTruthy();
   });
 
   it("opens on a starter verse and filters by category", () => {
