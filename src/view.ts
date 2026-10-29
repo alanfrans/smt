@@ -1,3 +1,24 @@
+function parchment(inner: string): string {
+  return `
+      <div class="scroll">
+        <div class="roller roller-left" aria-hidden="true">
+          <img class="cap" src="/art/lscroll-top.png" alt="" width="36" height="42" />
+          <div class="shaft"></div>
+          <img class="cap cap-bot" src="/art/lscroll-bot.png" alt="" width="36" height="44" />
+        </div>
+        <div class="scroll-sheet">
+          ${inner}
+          <img class="scroll-curl" src="/art/bscroll.png" alt="" width="135" height="18" />
+        </div>
+        <div class="roller roller-right" aria-hidden="true">
+          <img class="cap" src="/art/rscroll-top.png" alt="" width="36" height="42" />
+          <div class="shaft"></div>
+          <img class="cap cap-bot" src="/art/rscroll-bot.png" alt="" width="36" height="44" />
+        </div>
+      </div>
+  `;
+}
+
 export const appMarkup = `
   <div class="page">
     <header class="mast">
@@ -30,14 +51,7 @@ export const appMarkup = `
 
     <p id="status" class="status" role="status" hidden></p>
 
-    <div class="scroll">
-      <div class="roller roller-left" aria-hidden="true">
-        <img class="cap" src="/art/lscroll-top.png" alt="" />
-        <div class="shaft"></div>
-        <img class="cap" src="/art/lscroll-bot.png" alt="" />
-      </div>
-      <div class="scroll-sheet">
-        <main>
+    <main>
       <section id="view-study" role="tabpanel" aria-labelledby="tab-study">
         <div class="study-layout">
           <aside class="panel picker">
@@ -46,6 +60,7 @@ export const appMarkup = `
             <p class="field-label" id="ref-label">Reference</p>
             <div id="ref-list" class="ref-list" role="listbox" aria-labelledby="ref-label"></div>
           </aside>
+          ${parchment(`
           <article class="panel reading">
             <h2 id="reading-ref" class="reading-ref"></h2>
             <p id="reading-verse" class="reading-verse"></p>
@@ -55,10 +70,12 @@ export const appMarkup = `
               Open an .sms file to replace them. Nothing is stored in this browser until you edit.
             </p>
           </article>
+          `)}
         </div>
       </section>
 
       <section id="view-edit" role="tabpanel" aria-labelledby="tab-edit" hidden>
+        ${parchment(`
         <form id="edit-form" class="panel editor" autocomplete="off">
           <div class="edit-grid">
             <label class="field">
@@ -85,9 +102,11 @@ export const appMarkup = `
           </div>
           <p class="hint" id="edit-position"></p>
         </form>
+        `)}
       </section>
 
       <section id="view-fill" role="tabpanel" aria-labelledby="tab-fill" hidden>
+        ${parchment(`
         <div class="panel drill">
           <div class="drill-meta">
             <p><span class="meta-label">Category</span> <strong id="fill-topic"></strong></p>
@@ -108,9 +127,11 @@ export const appMarkup = `
           <input id="fill-entry" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" />
           <p class="hint" id="fill-hint"></p>
         </div>
+        `)}
       </section>
 
       <section id="view-search" role="tabpanel" aria-labelledby="tab-search" hidden>
+        ${parchment(`
         <div class="panel drill">
           <div class="drill-meta">
             <p><span class="meta-label">Category</span> <strong id="search-topic"></strong></p>
@@ -125,9 +146,11 @@ export const appMarkup = `
             <button type="button" id="btn-search-print">Print puzzle</button>
           </div>
         </div>
+        `)}
       </section>
 
       <section id="view-type" role="tabpanel" aria-labelledby="tab-type" hidden>
+        ${parchment(`
         <div class="panel drill">
           <div class="drill-meta">
             <p><span class="meta-label">Category</span> <strong id="type-topic"></strong></p>
@@ -151,16 +174,9 @@ export const appMarkup = `
           <p class="field-label" id="type-best-label">Best times</p>
           <ul id="type-best" class="best-list" aria-labelledby="type-best-label"></ul>
         </div>
+        `)}
       </section>
-        </main>
-        <img class="scroll-curl" src="/art/bscroll.png" alt="" />
-      </div>
-      <div class="roller roller-right" aria-hidden="true">
-        <img class="cap" src="/art/rscroll-top.png" alt="" />
-        <div class="shaft"></div>
-        <img class="cap" src="/art/rscroll-bot.png" alt="" />
-      </div>
-    </div>
+    </main>
 
     <section id="print-root" class="print-root" aria-hidden="true"></section>
 
