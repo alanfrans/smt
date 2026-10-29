@@ -52,11 +52,11 @@ describe("Scripture Memory Tool", () => {
     const wordmark = document.querySelector(".wordmark");
     if (!(wordmark instanceof HTMLImageElement)) throw new Error("missing wordmark");
     expect(wordmark.alt).toBe("Scripture Memory Tool");
-    expect(wordmark.getAttribute("src")).toBe("/art/smt-logo.png");
+    expect(wordmark.getAttribute("src")).toBe("/art/smt.png");
     expect(document.querySelector(".crest")?.getAttribute("src")).toBe("/favicon.png");
-    expect(document.querySelector(".roller-left .shaft")).toBeTruthy();
-    expect(document.querySelector(".roller-right .shaft")).toBeTruthy();
-    expect(document.querySelector(".scroll-curl")?.getAttribute("src")).toBe("/art/bscroll.png");
+    expect(document.querySelector(".scroll-curl")).toBeNull();
+    expect(document.querySelector(".roller-left .roll")?.getAttribute("src")).toBe("/art/leftscroll.png");
+    expect(document.querySelector(".roller-right .roll")?.getAttribute("src")).toBe("/art/rightscroll.png");
     expect(document.querySelector(".colophon-mark")?.getAttribute("src")).toBe("/art/wordmark.png");
     expect(document.querySelector(".scroll .picker")).toBeNull();
     expect(document.querySelector(".scroll .reading")).toBeTruthy();

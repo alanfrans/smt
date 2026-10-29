@@ -2,29 +2,23 @@ function parchment(inner: string): string {
   return `
       <div class="scroll">
         <div class="roller roller-left" aria-hidden="true">
-          <img class="cap" src="/art/lscroll-top.png" alt="" width="36" height="42" />
-          <div class="shaft"></div>
-          <img class="cap cap-bot" src="/art/lscroll-bot.png" alt="" width="36" height="44" />
+          <img class="roll" src="/art/leftscroll.png" alt="" width="164" height="630" />
         </div>
         <div class="scroll-sheet">
           ${inner}
-          <img class="scroll-curl" src="/art/bscroll.png" alt="" width="135" height="18" />
         </div>
         <div class="roller roller-right" aria-hidden="true">
-          <img class="cap" src="/art/rscroll-top.png" alt="" width="36" height="42" />
-          <div class="shaft"></div>
-          <img class="cap cap-bot" src="/art/rscroll-bot.png" alt="" width="36" height="44" />
+          <img class="roll" src="/art/rightscroll.png" alt="" width="146" height="608" />
         </div>
       </div>
   `;
 }
-
 export const appMarkup = `
   <div class="page">
     <header class="mast">
       <div class="brand">
         <h1>
-          <img class="wordmark" src="/art/smt-logo.png" alt="Scripture Memory Tool" width="237" height="247" />
+          <img class="wordmark" src="/art/smt.png" alt="Scripture Memory Tool" width="499" height="362" />
         </h1>
         <p class="lede">
           <img class="crest" src="/favicon.png" alt="" width="32" height="32" />
