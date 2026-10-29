@@ -95,8 +95,9 @@ h1 {
 
 .wordmark {
   display: block;
-  width: min(158px, 44vw);
+  width: min(172px, 48vw);
   height: auto;
+  filter: drop-shadow(0 8px 16px rgba(36, 48, 72, 0.14));
 }
 
 .lede {
@@ -112,7 +113,8 @@ h1 {
   width: 32px;
   height: 32px;
   flex: 0 0 auto;
-  image-rendering: pixelated;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(36, 48, 72, 0.18);
 }
 
 .mast-actions {
@@ -161,10 +163,11 @@ h1 {
 }
 
 .roller {
-  width: 28px;
-  flex: 0 0 28px;
+  width: 36px;
+  flex: 0 0 36px;
   display: flex;
   flex-direction: column;
+  filter: drop-shadow(0 4px 8px rgba(36, 48, 72, 0.12));
 }
 
 .roller .cap {
@@ -204,6 +207,7 @@ h1 {
   width: min(220px, 72%);
   height: auto;
   margin: 0.45rem auto 0;
+  filter: drop-shadow(0 3px 6px rgba(36, 48, 72, 0.12));
 }
 
 .panel {
@@ -544,6 +548,7 @@ button.search-cell.picked {
   width: min(148px, 42vw);
   height: auto;
   margin: 0 0 0.45rem;
+  filter: drop-shadow(0 4px 8px rgba(36, 48, 72, 0.1));
 }
 
 .colophon code {
