@@ -45,7 +45,11 @@ function text(id: string) {
 }
 
 describe("Scripture Memory Tool", () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+    window.innerWidth = 1024;
+    vi.restoreAllMocks();
+  });
 
   it("shows the classic title, icon, and scroll", () => {
     setup();
@@ -276,6 +280,44 @@ describe("Scripture Memory Tool", () => {
     verse.value = `${verse.value} Amen.`;
     verse.dispatchEvent(new Event("input"));
     expect(localStorage.getItem(STORAGE_KEY)).toContain("Amen.");
+  });
+
+  it("uses an 8 by 16 phone grid for a short verse and 8 by 20 for a long one", () => {
+    vi.spyOn(window, "matchMedia").mockImplementation((query: string) => {
+      const max = /max-width:\s*(\d+)px/.exec(query);
+      return {
+        matches: max ? 390 <= Number(max[1]) : false,
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      } as MediaQueryList;
+    });
+    setup();
+    const category = document.getElementById("category");
+    if (!(category instanceof HTMLSelectElement)) throw new Error("missing category");
+    category.value = "Comfort";
+    category.dispatchEvent(new Event("change"));
+    expect(text("reading-ref")).toBe("Psalm 23:1");
+    click("tab-search");
+    expect(document.querySelectorAll(".search-cell")).toHaveLength(8 * 16);
+    expect(document.querySelector('[data-row="0"][data-col="7"]')).toBeTruthy();
+    expect(document.querySelector('[data-row="0"][data-col="8"]')).toBeNull();
+    expect(document.querySelector('[data-row="15"]')).toBeTruthy();
+    expect(document.querySelector('[data-row="16"]')).toBeNull();
+
+    click("tab-study");
+    category.value = "Gospel";
+    category.dispatchEvent(new Event("change"));
+    expect(text("reading-ref")).toBe("John 3:16");
+    click("tab-search");
+    expect(document.querySelectorAll(".search-cell")).toHaveLength(8 * 20);
+    expect(document.querySelector('[data-row="19"][data-col="7"]')).toBeTruthy();
+    expect(document.querySelector('[data-row="0"][data-col="8"]')).toBeNull();
+    expect(document.querySelector('[data-row="20"]')).toBeNull();
   });
 
   it("reveals a word dragged out of the search and can print the puzzle", () => {

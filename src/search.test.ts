@@ -5,12 +5,17 @@ import {
   gridContains,
   lettersOnLine,
   matchWord,
+  mobileShapeFor,
   puzzleWords,
   tryPlaceWord,
   MOBILE_SHAPE,
+  MOBILE_SHAPE_LONG,
+  MOBILE_SHORT_LETTER_BUDGET,
+  MOBILE_SHORT_WORD_BUDGET,
   DESKTOP_SHAPE,
   wordKey,
 } from "./search.ts";
+import { sampleRecords } from "./sample.ts";
 
 const JOHN =
   "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.";
@@ -66,28 +71,77 @@ describe("word search", () => {
     expect(matchWord("A", ["CAT"])).toBeNull();
   });
 
-  it("builds a tall 10 x 24 grid for phones and still hides every word", () => {
+  it("uses an 8 by 16 phone grid when the verse fits, and hides every word", () => {
+    const short = "The LORD is my shepherd; I shall not want.";
+    expect(mobileShapeFor(short)).toEqual(MOBILE_SHAPE);
     let n = 0;
     const lcg = () => {
       n = (n * 9301 + 49297) % 233280;
       return n / 233280;
     };
     for (const r of [() => 0, () => 0.5, () => 0.999, lcg]) {
-      const puzzle = buildPuzzle(JOHN, r, MOBILE_SHAPE);
-      expect(puzzle.cols).toBe(10);
-      expect(puzzle.rows).toBeGreaterThanOrEqual(24);
-      expect(puzzle.grid).toHaveLength(puzzle.rows);
-      for (const row of puzzle.grid) expect(row).toHaveLength(10);
-      // EVERLASTING is 11 letters, longer than the 10-wide grid.
-      expect(puzzle.words).toContain("EVERLASTING");
+      const puzzle = buildPuzzle(short, r, mobileShapeFor(short));
+      expect(puzzle.cols).toBe(8);
+      expect(puzzle.rows).toBe(16);
+      expect(puzzle.grid).toHaveLength(16);
+      for (const row of puzzle.grid) expect(row).toHaveLength(8);
+      expect(new Set(puzzle.words)).toEqual(new Set(puzzleWords(short)));
       for (const word of puzzle.words) expect(gridContains(puzzle.grid, word)).toBe(true);
-      for (const placement of puzzle.placements) {
-        for (const cell of placement.cells) {
-          expect(cell.col).toBeLessThan(10);
-          expect(cell.row).toBeLessThan(puzzle.rows);
-        }
+    }
+  });
+
+  it("uses 8 by 20 when a verse has too many words or letters for 8 by 16", () => {
+    expect(puzzleWords(JOHN).length).toBeGreaterThan(MOBILE_SHORT_WORD_BUDGET);
+    const johnLetters = puzzleWords(JOHN).reduce((sum, word) => sum + word.length, 0);
+    expect(johnLetters).toBeGreaterThan(MOBILE_SHORT_LETTER_BUDGET);
+    expect(mobileShapeFor(JOHN)).toEqual(MOBILE_SHAPE_LONG);
+
+    const lettersOnly = sampleRecords().find((record) => record.reference === "2 Timothy 3:16");
+    if (!lettersOnly) throw new Error("missing 2 Timothy 3:16");
+    const timothyWords = puzzleWords(lettersOnly.verse);
+    expect(timothyWords.length).toBeLessThanOrEqual(MOBILE_SHORT_WORD_BUDGET);
+    expect(timothyWords.reduce((sum, word) => sum + word.length, 0)).toBeGreaterThan(MOBILE_SHORT_LETTER_BUDGET);
+    expect(mobileShapeFor(lettersOnly.verse)).toEqual(MOBILE_SHAPE_LONG);
+
+    const manyWords = Array.from({ length: MOBILE_SHORT_WORD_BUDGET + 1 }, (_, index) => `ox${index}`).join(" ");
+    const many = puzzleWords(manyWords);
+    expect(many.length).toBe(MOBILE_SHORT_WORD_BUDGET + 1);
+    expect(many.reduce((sum, word) => sum + word.length, 0)).toBeLessThanOrEqual(MOBILE_SHORT_LETTER_BUDGET);
+    expect(mobileShapeFor(manyWords)).toEqual(MOBILE_SHAPE_LONG);
+
+    let n = 0;
+    const lcg = () => {
+      n = (n * 9301 + 49297) % 233280;
+      return n / 233280;
+    };
+    for (const verse of [JOHN, lettersOnly.verse, manyWords]) {
+      for (const r of [() => 0, () => 0.5, () => 0.999, lcg]) {
+        const puzzle = buildPuzzle(verse, r, mobileShapeFor(verse));
+        expect(puzzle.cols).toBe(8);
+        expect(puzzle.rows).toBe(20);
+        for (const row of puzzle.grid) expect(row).toHaveLength(8);
+        for (const word of puzzle.words) expect(gridContains(puzzle.grid, word)).toBe(true);
       }
     }
+  });
+
+  it("keeps a phone grid 8 columns wide when a word is longer than 20", () => {
+    const huge = `${"A".repeat(24)} is here now`;
+    expect(mobileShapeFor(huge)).toEqual({ rows: 24, cols: 8 });
+    const puzzle = buildPuzzle(huge, () => 0, mobileShapeFor(huge));
+    expect(puzzle.cols).toBe(8);
+    expect(puzzle.rows).toBeGreaterThanOrEqual(24);
+    expect(gridContains(puzzle.grid, "A".repeat(24))).toBe(true);
+    expect(puzzle.words.every((word) => gridContains(puzzle.grid, word))).toBe(true);
+  });
+
+  it("places every word of a crowded verse without widening past 8 columns", () => {
+    const crowded = Array.from({ length: 40 }, (_, index) => `longword${index}`).join(" ");
+    const puzzle = buildPuzzle(crowded, () => 0.3, mobileShapeFor(crowded));
+    expect(puzzle.cols).toBe(8);
+    expect(puzzle.words).toHaveLength(40);
+    for (const word of puzzle.words) expect(gridContains(puzzle.grid, word)).toBe(true);
+    for (const row of puzzle.grid) expect(row).toHaveLength(8);
   });
 
   it("places words in a non-square grid without running off the side", () => {
