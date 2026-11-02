@@ -71,9 +71,36 @@ function emptyGrid(rows: number, cols: number = rows): string[][] {
 
 export type GridShape = { rows: number; cols: number };
 
-/** Desktop puzzles are square; phones get a tall grid that fits a narrow screen. */
+/** Desktop puzzles stay square. Phones get an 8-column grid that fits the screen. */
 export const DESKTOP_SHAPE: GridShape = { rows: 16, cols: 16 };
-export const MOBILE_SHAPE: GridShape = { rows: 24, cols: 10 };
+export const MOBILE_SHAPE: GridShape = { rows: 16, cols: 8 };
+export const MOBILE_SHAPE_LONG: GridShape = { rows: 20, cols: 8 };
+
+/**
+ * An 8×16 grid has 128 cells. More letters than this leaves too little
+ * room to place the words and still fill the blanks.
+ */
+export const MOBILE_SHORT_LETTER_BUDGET = 80;
+/** More puzzle words than this crowd an 8-column grid. */
+export const MOBILE_SHORT_WORD_BUDGET = 18;
+
+/**
+ * Short verses use 8×16. A verse with too many words, too many letters,
+ * or a word longer than 16 rows uses 8×20. A single word longer than 20
+ * grows the row count just enough to hold it, and the grid stays 8 wide.
+ */
+export function mobileShapeFor(verse: string): GridShape {
+  const words = puzzleWords(verse);
+  if (!words.length) return MOBILE_SHAPE;
+  const letters = words.reduce((sum, word) => sum + word.length, 0);
+  const longest = words.reduce((max, word) => Math.max(max, word.length), 0);
+  const fitsShort =
+    words.length <= MOBILE_SHORT_WORD_BUDGET &&
+    letters <= MOBILE_SHORT_LETTER_BUDGET &&
+    longest <= MOBILE_SHAPE.rows;
+  if (fitsShort) return MOBILE_SHAPE;
+  return { rows: Math.max(MOBILE_SHAPE_LONG.rows, longest), cols: MOBILE_SHAPE.cols };
+}
 
 export function tryPlaceWord(
   grid: string[][],
@@ -138,6 +165,47 @@ function placeAll(words: readonly string[], rows: number, cols: number, rng: () 
   return { size: Math.max(rows, cols), rows, cols, grid, words: [...words], placements };
 }
 
+/** Rows needed to stack every word down `cols` columns with no overlaps. */
+function columnStackHeight(words: readonly string[], cols: number): number {
+  const heights = Array.from({ length: Math.max(cols, 1) }, () => 0);
+  for (const word of [...words].sort((a, b) => b.length - a.length)) {
+    let slot = 0;
+    for (let index = 1; index < heights.length; index++) {
+      if ((heights[index] ?? 0) < (heights[slot] ?? 0)) slot = index;
+    }
+    heights[slot] = (heights[slot] ?? 0) + word.length;
+  }
+  return heights.reduce((max, height) => Math.max(max, height), 1);
+}
+
+/** Guaranteed placement for a phone grid: 8 columns, as many rows as the words need. */
+function fallbackNarrow(words: readonly string[], cols: number, minRows: number): Puzzle {
+  const heights = Array.from({ length: cols }, () => 0);
+  const slots: { word: string; row: number; col: number }[] = [];
+  for (const word of words) {
+    let slot = 0;
+    for (let index = 1; index < cols; index++) {
+      if ((heights[index] ?? 0) < (heights[slot] ?? 0)) slot = index;
+    }
+    const row = heights[slot] ?? 0;
+    heights[slot] = row + word.length;
+    slots.push({ word, row, col: slot });
+  }
+  const rows = Math.max(minRows, ...heights, 1);
+  const grid = emptyGrid(rows, cols);
+  const placements: Placement[] = slots.map(({ word, row, col }) => {
+    const cells: CellPos[] = [];
+    for (let i = 0; i < word.length; i++) {
+      const rowCells = grid[row + i];
+      if (!rowCells) continue;
+      rowCells[col] = word[i] ?? "";
+      cells.push({ row: row + i, col });
+    }
+    return { word, cells };
+  });
+  return { size: Math.max(rows, cols), rows, cols, grid, words: [...words], placements };
+}
+
 function fallback(words: readonly string[]): Puzzle {
   const longest = words.reduce((max, word) => Math.max(max, word.length), 1);
   const size = Math.max(words.length, longest, 1);
@@ -184,7 +252,13 @@ export function buildPuzzle(
   if (Math.max(rows, cols) < longest) rows = longest;
   const growRows = rows >= cols;
   const start = growRows ? rows : cols;
-  const limit = Math.max(start + 8, Math.min(32, longest + ranked.length));
+  // Phone grids are taller than they are wide. Keep the requested column
+  // count (so the puzzle cannot scroll sideways) and allow enough rows
+  // that every word can still be stacked vertically.
+  const narrow = shape.cols < shape.rows;
+  const limit = narrow
+    ? Math.max(start, columnStackHeight(ranked, cols))
+    : Math.max(start + 8, Math.min(32, longest + ranked.length));
   let puzzle: Puzzle | null = null;
   while ((growRows ? rows : cols) <= limit && !puzzle) {
     for (let tryNumber = 0; tryNumber < 8 && !puzzle; tryNumber++) {
@@ -195,7 +269,7 @@ export function buildPuzzle(
       else cols += 1;
     }
   }
-  if (!puzzle) puzzle = fallback(ranked);
+  if (!puzzle) puzzle = narrow ? fallbackNarrow(ranked, cols, rows) : fallback(ranked);
   fillBlanks(puzzle.grid, rng);
   return puzzle;
 }

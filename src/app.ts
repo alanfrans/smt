@@ -18,7 +18,7 @@ import {
 import {
   buildPuzzle,
   DESKTOP_SHAPE,
-  MOBILE_SHAPE,
+  mobileShapeFor,
   cellsOnLine,
   lettersOnLine,
   matchWord,
@@ -780,7 +780,7 @@ export function mountApp(root: HTMLElement, ports: Partial<AppPorts> = {}): void
       searchStarted = null;
       return;
     }
-    searchPuzzle = buildPuzzle(text, io.random, isCompact() ? MOBILE_SHAPE : DESKTOP_SHAPE);
+    searchPuzzle = buildPuzzle(text, io.random, isCompact() ? mobileShapeFor(text) : DESKTOP_SHAPE);
     searchStarted = io.now();
   }
 
@@ -1179,7 +1179,7 @@ export function mountApp(root: HTMLElement, ports: Partial<AppPorts> = {}): void
   must<HTMLButtonElement>(root, "btn-type-check").addEventListener("click", checkTypedVerse);
   must<HTMLButtonElement>(root, "btn-type-random").addEventListener("click", randomVerse);
 
-  // Crossing the phone breakpoint swaps between the square and the tall grid.
+  // Crossing the phone breakpoint swaps the square grid for the 8-column one.
   const onCompactChange = () => {
     if (view === "search") render();
   };
